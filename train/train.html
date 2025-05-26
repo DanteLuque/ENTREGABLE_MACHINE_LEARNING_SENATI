@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Entrenamiento</title>
+</head>
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ml5@0.12.2/dist/ml5.min.js"></script>
+    <script>
+        let normalTriangles = [];
+        let normalDeCabezaTriangles = [];
+        let espejoTriangles = [];
+        let espejoDeCabezaTriangles = [];
+        let acutanguloTriangles = [];
+        let acutanguloDeCabezaTriangles = [];
+
+        let triangleClassifier;
+
+        function preload() {
+            for (let i = 0; i < 100; i++) {
+                let index = nf(i + 1, 3, 0);
+
+                normalTriangles[i] = loadImage(`../processing/triangles/data/rectangle_triangles/normal/triangle${index}.png`);
+                normalDeCabezaTriangles[i] = loadImage(`../processing/triangles/data/rectangle_triangles/normal_de_cabeza/triangle${index}.png`);
+                espejoTriangles[i] = loadImage(`../processing/triangles/data/rectangle_triangles/espejo/triangle${index}.png`);
+                espejoDeCabezaTriangles[i] = loadImage(`../processing/triangles/data/rectangle_triangles/espejo_de_cabeza/triangle${index}.png`);
+                acutanguloTriangles[i] = loadImage(`../processing/triangles/data/rectangle_triangles/acutangulo/triangle${index}.png`);
+                acutanguloDeCabezaTriangles[i] = loadImage(`../processing/triangles/data/rectangle_triangles/acutangulo_de_cabeza/triangle${index}.png`);
+            }
+        }
+
+        function setup() {
+            noCanvas();
+
+            let options = {
+                inputs: [48, 48, 4],
+                task: "imageClassification",
+                debug: true,
+            };
+
+            triangleClassifier = ml5.neuralNetwork(options);
+            for (let i = 0; i < 100; i++) {
+                triangleClassifier.addData({ image: normalTriangles[i] }, { label: "Triangulo Rectangulo - TIPO A - normal" });
+                triangleClassifier.addData({ image: normalDeCabezaTriangles[i] }, { label: "Triangulo Rectangulo - TIPO C - normal de cabeza" });
+                triangleClassifier.addData({ image: espejoTriangles[i] }, { label: "Triangulo Rectangulo - TIPO B - en espejo" });
+                triangleClassifier.addData({ image: espejoDeCabezaTriangles[i] }, { label: "Triangulo Rectangulo - TIPO D - en espejo y de cabeza" });
+                triangleClassifier.addData({ image: acutanguloTriangles[i] }, { label: "Triangulo Acutangulo - TIPO A" });
+                triangleClassifier.addData({ image: acutanguloDeCabezaTriangles[i] }, { label: "Triangulo Acutangulo de cabeza - TIPO B" });
+            }
+
+            triangleClassifier.normalizeData();
+            triangleClassifier.train({ epochs: 50 }, finishedTraining);
+        }
+
+        function finishedTraining() {
+            console.log("✅ Modelo de triángulos entrenado");
+            triangleClassifier.save();
+        }
+    </script>
+</body>
+
+</html>
